@@ -1,48 +1,51 @@
 import streamlit as st
 import pandas as pd
 
-# Configuration de la page
-st.set_page_config(page_title="Ballon de Plume", page_icon="⚽")
+# 1. Configuration du style
+st.set_page_config(page_title="Ballon de Plume", layout="wide")
 
-# Connexion au Google Sheets (en format CSV public)
-SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTOrrGaESUYXhQUNary4l42k0kMZf-ENZOX4cPwzHourKSyWZBHnNDkFDHw30tNo-76KBYWYwZSHG2J/pubhtml"
+# 2. Lien vers ton Google Sheets (PUBLIÉ AU WEB en format CSV)
+# REMPLACE l'URL ci-dessous par la tienne
+SHEET_URL = "Lien_de_ton_google_sheet_publie_en_CSV"
 
 @st.cache_data
-def load_data():
-    return pd.read_csv(SHEET_URL)
+def load_data(url):
+    return pd.read_csv(url)
 
-df = load_data()
+try:
+    df = load_data(SHEET_URL)
 
-# --- INTERFACE ---
-st.title("📖 Ballon de Plume")
-st.subheader("L'histoire du football par la littérature")
+    # BARRE LATÉRALE
+    st.sidebar.title("📚 Bibliothèque")
+    auteur_choisi = st.sidebar.selectbox("Choisir un récit :", df["Nom_Auteur"])
 
-# Barre latérale pour choisir l'auteur
-auteur_choisi = st.sidebar.selectbox("Choisissez un auteur :", df["Nom_Auteur"])
+    # FILTRAGE
+    info = df[df["Nom_Auteur"] == auteur_choisi].iloc[0]
 
-# Filtrer les données selon l'auteur
-info = df[df["Nom_Auteur"] == auteur_choisi].iloc[0]
+    # AFFICHAGE PRINCIPAL
+    st.title(f"📖 {info['Nom_Auteur']}")
+    
+    col1, col2 = st.columns([1, 2])
+    with col1:
+        st.image(info["Portrait_URL"], use_container_width=True)
+    with col2:
+        st.subheader(info["Accroche"])
+        st.markdown(f"**Origine :** {info['Nationalite']}")
+        st.write("---")
+        st.write(info["Texte_Litteraire"])
 
-# Affichage de la fiche
-col1, col2 = st.columns([1, 2])
+    # SECTION QUIZ
+    st.write("---")
+    st.subheader("🧠 Le Défi du Scribe")
+    choix = st.radio(info["Question_Quiz"], [info["Option_A"], info["Option_B"]])
 
-with col1:
-    st.image(info["Portrait_URL"], caption=f"{info['Nom_Auteur']} ({info['Nationalite']})")
+    if st.button("Valider la réponse"):
+        if choix == info["Bonne_Reponse"]:
+            st.success(f"Félicitations ! Vous gagnez le badge : {info['Badge_Nom']}")
+            st.balloons()
+        else:
+            st.error("Ce n'est pas tout à fait ça... Réessayez !")
+        st.info(f"**En savoir plus :** {info['Explication_Feedback']}")
 
-with col2:
-    st.markdown(f"### *{info['Accroche']}*")
-    st.write(info["Texte_Litteraire"])
-
-st.divider()
-
-# --- SECTION QUIZ ---
-st.write("### 🧠 Le Défi du Scribe")
-option = st.radio(info["Question_Quiz"], [info["Option_A"], info["Option_B"]])
-
-if st.button("Valider la réponse"):
-    if option == info["Bonne_Reponse"]:
-        st.success(f"Bravo ! Vous gagnez le badge : {info['Badge_Nom']}")
-        st.balloons()
-    else:
-        st.error("Dommage... Réessayez !")
-    st.info(info["Explication_Feedback"])
+except Exception as e:
+    st.error("L'application n'arrive pas encore à lire les données. Vérifiez que votre Google Sheet est bien 'Publié sur le Web' au format CSV.")
