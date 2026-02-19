@@ -6,7 +6,7 @@ st.set_page_config(page_title="Ballon de Plume", layout="wide")
 
 # 2. Lien vers ton Google Sheets (PUBLIÉ AU WEB en format CSV)
 # REMPLACE l'URL ci-dessous par la tienne
-SHEET_URL = "Lien_de_ton_google_sheet_publie_en_CSV"
+SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTOrrGaESUYXhQUNary4l42k0kMZf-ENZOX4cPwzHourKSyWZBHnNDkFDHw30tNo-76KBYWYwZSHG2J/pub?output=csv"
 
 @st.cache_data
 def load_data(url):
